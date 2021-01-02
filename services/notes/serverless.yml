@@ -35,7 +35,7 @@ provider:
       - dynamodb:DeleteItem
       - dynamodb:DescribeTable
       Resource: 
-        - !ImportValue '${self:custom.sstApp-TableArn'
+        - !ImportValue '${self:custom.sstApp}-TableArn'
 
 functions:
   create:
