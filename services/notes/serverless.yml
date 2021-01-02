@@ -1,7 +1,6 @@
-# NOTE: update this with your service name
-service: notes-api
+service: notes-app-api
 
-# Create an optimized package for our functions 
+# Create an optimized package for our functions
 package:
   individually: true
 
@@ -12,29 +11,31 @@ plugins:
 
 custom:
   stage: ${opt:stage, self:provider.stage}
-  setApp: ${self:custom.stage}-notes-infra
+  sstApp: ${self:custom.stage}-notes-infra
 
 provider:
   name: aws
   runtime: nodejs12.x
   stage: dev
-  region: ap-southeast-2
-  
-  
+  region: us-east-1
+
   environment:
-    tableName: !ImportValue '${self:custom.sstApp}-TableName'
     stripeSecretKey: ${env:STRIPE_SECRET_KEY}
+    tableName: !ImportValue '${self:custom.sstApp}-TableName'
+
   iamRoleStatements:
     - Effect: Allow
       Action:
-      - dynamodb:Scan
-      - dynamodb:Query
-      - dynamodb:GetItem
-      - dynamodb:PutItem
-      - dynamodb:UpdateItem
-      - dynamodb:DeleteItem
-      - dynamodb:DescribeTable
-      Resource: 
+        - dynamodb:Scan
+        - dynamodb:Query
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+        - dynamodb:DescribeTable
+      # Restrict our IAM role permissions to
+      # the specific table for the stage
+      Resource:
         - !ImportValue '${self:custom.sstApp}-TableArn'
 
 functions:
@@ -46,23 +47,29 @@ functions:
           method: post
           cors: true
           authorizer: aws_iam
+
   get:
     handler: get.main
     events:
       - http:
           path: notes/{id}
           method: get
-          cors: true 
+          cors: true
           authorizer: aws_iam
-  list: 
+
+  list:
     handler: list.main
-    events: 
+    events:
       - http:
           path: notes
           method: get
           cors: true
           authorizer: aws_iam
+
   update:
+    # Defines an HTTP API endpoint that calls the main function in update.js
+    # - path: url path is /notes/{id}
+    # - method: PUT request
     handler: update.main
     events:
       - http:
@@ -70,7 +77,11 @@ functions:
           method: put
           cors: true
           authorizer: aws_iam
+
   delete:
+    # Defines an HTTP API endpoint that calls the main function in delete.js
+    # - path: url path is /notes/{id}
+    # - method: DELETE request
     handler: delete.main
     events:
       - http:
@@ -78,6 +89,7 @@ functions:
           method: delete
           cors: true
           authorizer: aws_iam
+
   billing:
     handler: billing.main
     events:
@@ -87,6 +99,9 @@ functions:
           cors: true
           authorizer: aws_iam
 
+# Create our resources with separate CloudFormation templates
 resources:
+  # API Gateway Errors
   - ${file(resources/api-gateway-errors.yml)}
+  # Cognito Identity Pool Policy
   - ${file(resources/cognito-policy.yml)}
