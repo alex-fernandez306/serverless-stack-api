@@ -1,6 +1,5 @@
 import util from "util";
 import AWS from "aws-sdk";
-import { debug } from "console";
 
 let logs;
 
