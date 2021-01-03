@@ -6,7 +6,7 @@ let logs;
 // Log AWS SDK calls
 AWS.config.logger = { log: debug };
 
-export default function debug(arguments) {
+export default function debug() {
   logs.push({
     date: new Date(),
     string: util.format.apply(null, arguments),
