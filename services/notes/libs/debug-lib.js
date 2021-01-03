@@ -3,32 +3,28 @@ import AWS from "aws-sdk";
 
 let logs;
 
+// Log AWS SDK calls
 AWS.config.logger = { log: debug };
 
-const debug = () => {
+export default function debug(arguments) {
   logs.push({
     date: new Date(),
     string: util.format.apply(null, arguments),
   });
 }
 
-const init = (event, context) => {
+export function init(event, context) {
   logs = [];
-  debug("API Event", {
+
+  // Log API event
+  debug("API event", {
     body: event.body,
     pathParameters: event.pathParameters,
     queryStringParameters: event.queryStringParameters,
   });
 }
 
-const flush = (e) => {
-  logs.forEach(({date, string}) => console.debug(date, string));
+export function flush(e) {
+  logs.forEach(({ date, string }) => console.debug(date, string));
   console.error(e);
 }
-
-export default {
-  debug,
-  flush,
-  init,
-}
-
